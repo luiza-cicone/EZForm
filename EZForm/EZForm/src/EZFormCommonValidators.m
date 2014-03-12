@@ -70,46 +70,22 @@ EZFormValidateNumericInput(id input)
 BOOL
 EZFormValidateEmailFormat(NSString *value)
 {
-    /* Checks for minimum of "x@y.z"
-     * Does not allow more than one "@" character.
-     * Does not allow consecutive "." characters.
-     */
+    if (value == nil)
+        return NO;
     
-    if ([value length] < 5) {
-	return NO;
-    }
+    NSString *pattern = @"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+    NSError *error = nil;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
     
-    // Check for "@" char within string, but not at either end
-    NSRange range = [value rangeOfString:@"@"];
-    if (range.location == NSNotFound || range.location < 1 || range.location >= [value length]-1) {
-	return NO;
-    }
+    NSRange matchRange = [regex rangeOfFirstMatchInString:value options:NSMatchingReportProgress range:NSMakeRange(0, value.length)];
     
-    // Check for multiple "@" chars
-    NSRange range2 = [value rangeOfString:@"@" options:NSBackwardsSearch];
-    if (range2.location != range.location) {
-	return NO;
-    }
+    BOOL didValidate = NO;
     
-    NSString *domain = [value componentsSeparatedByString:@"@"][1];
+    // Did we find a matching range
+    if (matchRange.location != NSNotFound)
+        didValidate = YES;
     
-    if ([domain length] < 3) {
-	return NO;
-    }
-    
-    // Check for "." char within domain, but not the first character
-    range = [domain rangeOfString:@"."];
-    if (range.location == NSNotFound || range.location < 1) {
-	return NO;
-    }
-    
-    // Check for ".." char within domain
-    range = [domain rangeOfString:@".."];
-    if (range.location != NSNotFound) {
-	return NO;
-    }
-    
-    return YES;
+    return didValidate;
 }
 
 
